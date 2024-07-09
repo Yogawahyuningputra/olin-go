@@ -30,11 +30,7 @@ func GetTransaction() {
 		GROUP BY u.name
 		HAVING SUM(o.amount) >= 100;
 	`
-	// 	query2 := `
-	// 		SELECT u.name, o.amount, o.created_at
-	// 		FROM users u
-	// 		JOIN orders o ON u.id = o.user_id;
-	// `
+
 	type Result struct {
 		Name   string  `json:"name"`
 		Amount float64 `json:"amount"`
@@ -53,8 +49,35 @@ func GetTransaction() {
 	}
 
 }
+func GetTransactionByUser(user_id int) {
+	query := `
+		SELECT u.name, o.amount, o.created_at
+		FROM users u
+		JOIN orders o ON u.id = o.user_id
+		WHERE u.id = ?
+	`
+
+	var results []struct {
+		Name      string  `json:"name"`
+		Amount    float64 `json:"amount"`
+		CreatedAt string  `json:"created_at"`
+	}
+
+	// Eksekusi query dengan parameter user_id
+	if err := DB.Raw(query, user_id).Scan(&results).Error; err != nil {
+		log.Fatalf("error executing query: %v", err)
+	}
+
+	// Tampilkan hasil
+	for _, result := range results {
+		fmt.Println("user:", result.Name)
+		fmt.Println("amount:", result.Amount)
+		fmt.Println("created_at:", result.CreatedAt)
+	}
+}
 func main() {
 	DatabaseInit()
 	GetTransaction()
-	fmt.Println("hello golang")
+	GetTransactionByUser(1)
+
 }
